@@ -1,5 +1,4 @@
 bin/
-maestro/
 
 # Go build artifacts
 *.test
