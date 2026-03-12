@@ -1,0 +1,14 @@
+bin/
+maestro/
+
+# Go build artifacts
+*.test
+*.out
+*.prof
+dist/
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
