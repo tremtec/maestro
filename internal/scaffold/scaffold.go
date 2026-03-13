@@ -215,7 +215,7 @@ func ensureGitignore(targetDir string) error {
 		return nil
 	}
 
-	entry := ".maestro/\n"
+	entry := "\n# Maestro Setup\n.maestro/\n"
 	if len(content) > 0 && !strings.HasSuffix(string(content), "\n") {
 		entry = "\n" + entry
 	}

@@ -5,8 +5,6 @@ tools:
   edit: false
 permission:
   bash:
-    "go run *": allow
-    "go test *": allow
     "make *": allow
     "*": ask
 ---

@@ -59,9 +59,11 @@ workflow:
       - agent: frontend-engineer
         depends_on: [backend-engineer]
 
-  quality_gate:
-    commands:
-      - go test ./...
-      - go vet ./...
+  quality:
+    parallel: true
     on_failure: fix_and_retry
     max_retries: 3
+    # TODO: project specific commands
+    # commands:
+    #   - make test
+    #   - make lint
