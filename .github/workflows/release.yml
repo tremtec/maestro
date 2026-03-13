@@ -1,0 +1,32 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history to access tags
+
+      - name: Get tag name
+        run: |
+          echo "Tag name: ${{ github.ref }}"
+          # Extract just the tag part (remove refs/tags/)
+          TAG_NAME=$(echo ${{ github.ref }} | sed 's|refs/tags/||')
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: "Release $TAG_NAME 🎉"
+          draft: false
+          prerelease: false   
