@@ -253,7 +253,11 @@ func ensureGitignore(targetDir string) error {
 	if err != nil {
 		return fmt.Errorf("opening .gitignore: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Printf("Error closing .gitignore: %v\n", err)
+		}
+	}()
 
 	if _, err := f.WriteString(entry); err != nil {
 		return fmt.Errorf("writing to .gitignore: %w", err)

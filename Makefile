@@ -8,6 +8,7 @@ build:
 	@go build -o $(BIN_DIR)/$(APP_NAME) .
 
 install:
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@go install .
 
 test:
@@ -15,3 +16,6 @@ test:
 
 clean:
 	@rm -rf $(BIN_DIR)
+
+lint:
+	@golangci-lint run ./...
