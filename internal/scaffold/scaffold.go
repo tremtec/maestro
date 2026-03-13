@@ -70,6 +70,35 @@ func Init(targetDir string, tools ...string) error {
 	return nil
 }
 
+// Remove maestro.yaml, .maestro/, .agents/, .opencode/, etc.
+func Drop(targetDir string) error {
+	entries, err := os.ReadDir(targetDir)
+	if err != nil {
+		return fmt.Errorf("reading target directory: %w", err)
+	}
+
+	for _, e := range entries {
+		name := e.Name()
+		if name == "maestro.yaml" ||
+			strings.HasPrefix(name, ".maestro") ||
+			strings.HasPrefix(name, ".agents") ||
+			strings.HasPrefix(name, ".opencode") {
+
+			// absolute path
+			path := filepath.Join(targetDir, name)
+
+			fmt.Printf("Removing %s...\n", path)
+
+			// Remove path (file or directory)
+			if err := os.RemoveAll(path); err != nil {
+				return fmt.Errorf("removing %s: %w", path, err)
+			}
+		}
+	}
+
+	return nil
+}
+
 // writeMaestroYAML reads the template and replaces the tools list.
 func writeMaestroYAML(targetDir string, tools []string) error {
 	dest := filepath.Join(targetDir, "maestro.yaml")
