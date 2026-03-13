@@ -1,7 +1,8 @@
 # Maestro
 
-Maestro is a CLI tool that orchestrates squad-based development on top
-of [OpenCode](https://opencode.ai). It acts as a **primary agent** that
+Maestro is a CLI tool that orchestrates squad-based development using AI
+agentic tools like [OpenCode](https://opencode.ai) and
+[Amp](https://ampcode.com). It acts as a **primary agent** that
 leads your agentic opera — coordinating specialist sub-agents through a
 structured workflow to reach an objective.
 
@@ -13,8 +14,8 @@ compatible: accepts stdin as input, returns output to stdout.
 - **Orchestrates multi-agent workflows** — coordinates Discovery,
   Synthesis, Build, and Quality Gate phases automatically.
 - **Manages specialist sub-agents** — delegates work to Architect,
-  Researcher, Frontend/Backend Engineers, QA, and others via OpenCode
-  sessions.
+  Researcher, Frontend/Backend Engineers, QA, and others via
+  configurable agent runtimes (OpenCode, Amp).
 - **Minimizes human interaction** — the only required human touchpoint
   is reviewing and approving the plan before the build phase begins.
 - **Tracks state as markdown** — all objectives, phase reports, and
@@ -36,12 +37,16 @@ go install github.com/tremtec/maestro@latest
 ### Initialize a project
 
 ```bash
-maestro init
+maestro init                          # defaults to opencode
+maestro init --tool amp              # scaffold for Amp
+maestro init --tool opencode,amp     # scaffold for both
 ```
 
 This will:
 
-1. Set up a minimum squad of OpenCode sub-agents in `.opencode/agent/`.
+1. Set up a squad of sub-agents for the selected tool(s).
+   - OpenCode: `.opencode/agent/*.md`
+   - Amp: `.agents/skills/*/SKILL.md` + `AGENTS.md`
 2. Create a `maestro.yaml` configuration file.
 3. Create the `.maestro/` state directory and add it to `.gitignore`.
 
@@ -131,8 +136,8 @@ schema.
 
 ## Design Principles
 
-- **CLI first** — heavily integrated with OpenCode, runs from your
-  terminal.
+- **CLI first** — supports multiple agent runtimes (OpenCode, Amp),
+  runs from your terminal.
 - **Unix compatible** — accepts stdin, returns stdout, composes with
   pipes.
 - **Minimal human interaction** — only the plan approval step requires

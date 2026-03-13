@@ -2,13 +2,6 @@
 description: >-
   DevOps / SRE — handles build tooling, CI/CD pipelines,
   release automation, and infrastructure configuration.
-mode: subagent
-tools:
-  write: true
-  edit: true
-permission:
-  bash:
-    "*": ask
 ---
 
 # DevOps / SRE

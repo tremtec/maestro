@@ -1,0 +1,9 @@
+---
+mode: subagent
+tools:
+  write: true
+  edit: true
+permission:
+  bash:
+    "*": ask
+---

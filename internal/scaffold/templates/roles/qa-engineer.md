@@ -2,13 +2,6 @@
 description: >-
   QA Engineer — runs automated tests, linting, and integration checks
   to verify code quality before delivery.
-mode: subagent
-tools:
-  write: true
-  edit: true
-permission:
-  bash:
-    "*": ask
 ---
 
 # QA Engineer

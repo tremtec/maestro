@@ -1,7 +1,8 @@
 # 🎵 Maestro
 
-A Unix-compatible CLI tool that orchestrates squad-based development on
-top of [OpenCode](https://opencode.ai).
+A Unix-compatible CLI tool that orchestrates squad-based development
+using AI agentic tools like [OpenCode](https://opencode.ai) and
+[Amp](https://ampcode.com).
 
 Maestro is a primary agent that leads your agentic opera — coordinating
 specialist sub-agents through a 4-phase workflow (Discovery → Synthesis
@@ -18,13 +19,15 @@ interaction.
   plain markdown files in `.maestro/`.
 - **Unix principles** — accepts stdin, returns stdout, composes with
   pipes.
-- **CLI first** — built with Cobra, heavily integrated with OpenCode.
+- **CLI first** — built with Cobra, supports OpenCode and Amp as agent
+  runtimes.
 
 ## Getting Started
 
 ```bash
 go install github.com/marco-souza/maestro@latest
-maestro init
+maestro init                          # defaults to opencode
+maestro init --tool opencode,amp      # scaffold for both tools
 maestro "Build a REST API for user management"
 ```
 

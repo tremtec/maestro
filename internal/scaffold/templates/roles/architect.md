@@ -2,11 +2,6 @@
 description: >-
   Technical architect — analyzes feasibility, designs system boundaries,
   proposes component architecture, and identifies tradeoffs.
-mode: subagent
-tools:
-  write: false
-  edit: false
-  bash: false
 ---
 
 # Architect

@@ -2,13 +2,6 @@
 description: >-
   Code Reviewer — validates API usage, checks for hallucinated methods,
   ensures standards compliance, and reviews code quality.
-mode: subagent
-tools:
-  write: false
-  edit: false
-permission:
-  bash:
-    "*": ask
 ---
 
 # Code Reviewer

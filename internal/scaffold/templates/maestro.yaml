@@ -2,38 +2,43 @@
 name: my-project
 description: Squad-based development orchestrator
 
-# Squad definition — maps roles to OpenCode agent files
+# Supported tools — agent runtimes to scaffold and use
+# Supported values: opencode, amp
+tools:
+  - opencode
+
+# Squad definition — maps roles to agent configurations
 agents:
   architect:
-    source: .opencode/agent/architect.md
+    role: architect
     phase: discovery
 
   researcher:
-    source: .opencode/agent/researcher.md
+    role: researcher
     phase: discovery
 
   ux-designer:
-    source: .opencode/agent/ux-designer.md
+    role: ux-designer
     phase: discovery
 
   frontend-engineer:
-    source: .opencode/agent/frontend-engineer.md
+    role: frontend-engineer
     phase: build
 
   backend-engineer:
-    source: .opencode/agent/backend-engineer.md
+    role: backend-engineer
     phase: build
 
   devops-sre:
-    source: .opencode/agent/devops-sre.md
+    role: devops-sre
     phase: build
 
   qa-engineer:
-    source: .opencode/agent/qa-engineer.md
+    role: qa-engineer
     phase: quality
 
   code-reviewer:
-    source: .opencode/agent/code-reviewer.md
+    role: code-reviewer
     phase: quality
 
 # Workflow phases

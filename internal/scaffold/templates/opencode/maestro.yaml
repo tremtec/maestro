@@ -1,0 +1,12 @@
+---
+mode: primary
+tools:
+  write: false
+  edit: false
+permission:
+  bash:
+    "go run *": allow
+    "go test *": allow
+    "make *": allow
+    "*": ask
+---

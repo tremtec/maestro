@@ -7,43 +7,98 @@ import (
 	"testing"
 )
 
-var agentFiles = []string{
-	"architect.md",
-	"researcher.md",
-	"ux-designer.md",
-	"frontend-engineer.md",
-	"backend-engineer.md",
-	"devops-sre.md",
-	"qa-engineer.md",
-	"code-reviewer.md",
+var roleFiles = []string{
+	"architect",
+	"researcher",
+	"ux-designer",
+	"frontend-engineer",
+	"backend-engineer",
+	"devops-sre",
+	"qa-engineer",
+	"code-reviewer",
 }
 
-func TestInit_CreatesAllFiles(t *testing.T) {
+func TestInit_OpenCode_CreatesAllFiles(t *testing.T) {
 	dir := t.TempDir()
 
 	if err := Init(dir); err != nil {
 		t.Fatalf("Init() error = %v", err)
 	}
 
-	// Check maestro.yaml
 	assertFileExists(t, filepath.Join(dir, "maestro.yaml"))
-
-	// Check .maestro/ state directory
 	assertDirExists(t, filepath.Join(dir, ".maestro"))
 
-	// Check all agent files
-	for _, name := range agentFiles {
-		assertFileExists(t, filepath.Join(dir, ".opencode", "agent", name))
+	// Check all OpenCode agent files (roles + maestro)
+	for _, name := range roleFiles {
+		assertFileExists(t, filepath.Join(dir, ".opencode", "agent", name+".md"))
+	}
+	assertFileExists(t, filepath.Join(dir, ".opencode", "agent", "maestro.md"))
+
+	assertFileContains(t, filepath.Join(dir, ".gitignore"), ".maestro/")
+
+	// maestro.yaml should list opencode as default tool
+	assertFileContains(t, filepath.Join(dir, "maestro.yaml"), "- opencode")
+}
+
+func TestInit_Amp_CreatesSkillFiles(t *testing.T) {
+	dir := t.TempDir()
+
+	if err := Init(dir, "amp"); err != nil {
+		t.Fatalf("Init(amp) error = %v", err)
 	}
 
-	// Check .gitignore contains .maestro/
-	assertFileContains(t, filepath.Join(dir, ".gitignore"), ".maestro/")
+	assertFileExists(t, filepath.Join(dir, "maestro.yaml"))
+	assertDirExists(t, filepath.Join(dir, ".maestro"))
+
+	// Check all Amp skill files
+	for _, name := range roleFiles {
+		assertFileExists(t, filepath.Join(dir, ".agents", "skills", name, "SKILL.md"))
+	}
+
+	// Maestro becomes AGENTS.md for Amp
+	assertFileExists(t, filepath.Join(dir, "AGENTS.md"))
+
+	// maestro.yaml should list amp
+	assertFileContains(t, filepath.Join(dir, "maestro.yaml"), "- amp")
+}
+
+func TestInit_MultiTool_CreatesBoth(t *testing.T) {
+	dir := t.TempDir()
+
+	if err := Init(dir, "opencode", "amp"); err != nil {
+		t.Fatalf("Init(opencode,amp) error = %v", err)
+	}
+
+	// OpenCode files
+	for _, name := range roleFiles {
+		assertFileExists(t, filepath.Join(dir, ".opencode", "agent", name+".md"))
+	}
+
+	// Amp skill files
+	for _, name := range roleFiles {
+		assertFileExists(t, filepath.Join(dir, ".agents", "skills", name, "SKILL.md"))
+	}
+
+	// Both listed in maestro.yaml
+	assertFileContains(t, filepath.Join(dir, "maestro.yaml"), "- opencode")
+	assertFileContains(t, filepath.Join(dir, "maestro.yaml"), "- amp")
+}
+
+func TestInit_UnsupportedTool(t *testing.T) {
+	dir := t.TempDir()
+
+	err := Init(dir, "cursornuke")
+	if err == nil {
+		t.Fatal("expected error for unsupported tool")
+	}
+	if !strings.Contains(err.Error(), "unsupported tool") {
+		t.Errorf("unexpected error: %v", err)
+	}
 }
 
 func TestInit_SkipsExistingFiles(t *testing.T) {
 	dir := t.TempDir()
 
-	// Pre-create maestro.yaml with custom content
 	configPath := filepath.Join(dir, "maestro.yaml")
 	original := []byte("custom: config\n")
 	if err := os.WriteFile(configPath, original, 0o644); err != nil {
@@ -64,8 +119,8 @@ func TestInit_SkipsExistingFiles(t *testing.T) {
 	}
 
 	// Other files should still be created
-	for _, name := range agentFiles {
-		assertFileExists(t, filepath.Join(dir, ".opencode", "agent", name))
+	for _, name := range roleFiles {
+		assertFileExists(t, filepath.Join(dir, ".opencode", "agent", name+".md"))
 	}
 }
 
@@ -76,19 +131,16 @@ func TestInit_SkipsWhenAlreadyInitialized(t *testing.T) {
 		t.Fatalf("first Init() error = %v", err)
 	}
 
-	// Modify maestro.yaml to detect if it gets overwritten
 	configPath := filepath.Join(dir, "maestro.yaml")
 	custom := []byte("custom: true\n")
 	if err := os.WriteFile(configPath, custom, 0o644); err != nil {
 		t.Fatalf("writing custom maestro.yaml: %v", err)
 	}
 
-	// Running again should skip entirely
 	if err := Init(dir); err != nil {
 		t.Fatalf("second Init() error = %v", err)
 	}
 
-	// maestro.yaml should keep the custom content (not re-scaffolded)
 	got, err := os.ReadFile(configPath)
 	if err != nil {
 		t.Fatalf("reading maestro.yaml: %v", err)
@@ -158,6 +210,24 @@ func TestInit_GitignoreNotDuplicated(t *testing.T) {
 	if count != 1 {
 		t.Errorf(".maestro/ appears %d times in .gitignore, want 1", count)
 	}
+}
+
+func TestInit_AgentFilesHaveFrontmatterAndRole(t *testing.T) {
+	dir := t.TempDir()
+
+	if err := Init(dir, "opencode", "amp"); err != nil {
+		t.Fatalf("Init() error = %v", err)
+	}
+
+	// OpenCode files should have OpenCode-specific frontmatter
+	ocArchitect := filepath.Join(dir, ".opencode", "agent", "architect.md")
+	assertFileContains(t, ocArchitect, "mode: subagent")
+	assertFileContains(t, ocArchitect, "# Architect")
+
+	// Amp skill files should have Amp-specific frontmatter
+	ampArchitect := filepath.Join(dir, ".agents", "skills", "architect", "SKILL.md")
+	assertFileContains(t, ampArchitect, "name: architect")
+	assertFileContains(t, ampArchitect, "# Architect")
 }
 
 func assertFileExists(t *testing.T, path string) {

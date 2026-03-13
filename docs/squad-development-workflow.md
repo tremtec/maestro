@@ -89,8 +89,9 @@ Plan
   └──▶ Frontend Engineer   (depends_on: backend)
 ```
 
-Each agent works within an isolated OpenCode session. Maestro monitors
-progress via the event stream and coordinates handoffs between agents.
+Each agent works within an isolated session managed by the configured
+runtime. Maestro monitors progress via the event stream and coordinates
+handoffs between agents.
 
 **Inputs:** Approved plan from Phase 2.
 
@@ -131,38 +132,42 @@ The workflow is defined in `maestro.yaml` at the project root.
 name: my-project
 description: Project description
 
-# Squad definition — maps roles to OpenCode agent files
+# Supported tools — agent runtimes to scaffold and use
+tools:
+  - opencode
+
+# Squad definition — maps roles to agent configurations
 agents:
   architect:
-    source: .opencode/agent/architect.md
+    role: architect
     phase: discovery
 
   researcher:
-    source: .opencode/agent/researcher.md
+    role: researcher
     phase: discovery
 
   ux-designer:
-    source: .opencode/agent/ux-designer.md
+    role: ux-designer
     phase: discovery
 
   frontend-engineer:
-    source: .opencode/agent/frontend-engineer.md
+    role: frontend-engineer
     phase: build
 
   backend-engineer:
-    source: .opencode/agent/backend-engineer.md
+    role: backend-engineer
     phase: build
 
   devops-sre:
-    source: .opencode/agent/devops-sre.md
+    role: devops-sre
     phase: build
 
   qa-engineer:
-    source: .opencode/agent/qa-engineer.md
+    role: qa-engineer
     phase: quality
 
   code-reviewer:
-    source: .opencode/agent/code-reviewer.md
+    role: code-reviewer
     phase: quality
 
 # Workflow phases
@@ -193,7 +198,12 @@ workflow:
 
 ### Agent Definition
 
-Each agent is an OpenCode markdown file with YAML frontmatter:
+Agent definitions are composed from shared role files and tool-specific
+wrappers. The role content (instructions, responsibilities, output
+format) is shared across all tools — only the frontmatter and file
+structure differ.
+
+**OpenCode** — agents are markdown files in `.opencode/agent/`:
 
 ```markdown
 ---
@@ -202,20 +212,42 @@ mode: subagent
 tools:
   write: true
   edit: true
-  bash: true
 ---
 
-System prompt with detailed instructions for the agent.
+Role instructions...
 ```
 
-Agents are stored in `.opencode/agent/` and referenced by `source` in
-`maestro.yaml`.
+**Amp** — agents become skills in `.agents/skills/*/SKILL.md`:
+
+```markdown
+---
+name: agent-name
+description: Brief description of the agent's expertise
+---
+
+Role instructions...
+```
+
+The orchestrator (Maestro) maps to `AGENTS.md` in Amp projects.
 
 ---
 
 ## Execution Model
 
-Maestro drives the workflow through the OpenCode HTTP API:
+Maestro drives the workflow through a **Runtime** interface that
+abstracts the underlying AI tool. Each tool provides its own execution
+backend:
+
+```text
+┌──────────────┐     Runtime interface    ┌──────────────────┐
+│  Maestro CLI │ ◀──────────────────────▶ │  Agent Runtime   │
+│  (Go)        │   RunAgent(prompt) →     │  (opencode, amp) │
+└──────────────┘   ← Result              └──────────────────┘
+```
+
+### OpenCode Runtime
+
+Uses the OpenCode HTTP API:
 
 1. **Start server** — `opencode serve` exposes the OpenAPI endpoint.
 2. **Create sessions** — each agent task runs in an isolated session.
@@ -224,15 +256,15 @@ Maestro drives the workflow through the OpenCode HTTP API:
 4. **Monitor events** — `GET /event` (SSE) streams real-time progress.
 5. **Collect results** — `GET /session/:id/message` retrieves agent
    output for synthesis and review.
-6. **Abort on failure** — `POST /session/:id/abort` if an agent is
-   stuck or exceeds retries.
 
-```text
-┌──────────────┐       HTTP API       ┌──────────────────┐
-│  Maestro CLI │ ◀──────────────────▶ │  opencode serve  │
-│  (Go)        │   sessions, prompts  │  (agent runtime) │
-└──────────────┘   events, messages   └──────────────────┘
-```
+### Amp Runtime
+
+Uses the Amp CLI in non-interactive mode:
+
+1. **Execute** — `amp -x "<prompt>"` runs a single agent task.
+2. **Collect output** — stdout contains the agent's response.
+3. **Skills** — agent roles are loaded as skills from
+   `.agents/skills/*/SKILL.md`.
 
 ---
 

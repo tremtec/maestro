@@ -2,13 +2,6 @@
 description: >-
   Frontend Engineer — implements user-facing interfaces, presentation
   logic, and client-side functionality.
-mode: subagent
-tools:
-  write: true
-  edit: true
-permission:
-  bash:
-    "*": ask
 ---
 
 # Frontend Engineer

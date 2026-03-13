@@ -2,11 +2,6 @@
 description: >-
   Researcher — performs documentation lookup, dependency analysis,
   prior art research, and API reference gathering.
-mode: subagent
-tools:
-  write: false
-  edit: false
-  bash: false
 ---
 
 # Researcher

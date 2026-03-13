@@ -2,11 +2,6 @@
 description: >-
   UX Designer — designs user flows, interaction patterns,
   accessibility considerations, and interface design.
-mode: subagent
-tools:
-  write: false
-  edit: false
-  bash: false
 ---
 
 # UX Designer

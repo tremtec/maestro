@@ -2,13 +2,6 @@
 description: >-
   Backend Engineer — implements core business logic, API integrations,
   data processing, and internal modules.
-mode: subagent
-tools:
-  write: true
-  edit: true
-permission:
-  bash:
-    "*": ask
 ---
 
 # Backend Engineer
