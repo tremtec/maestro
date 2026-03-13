@@ -11,3 +11,6 @@ dist/
 .vscode/
 *.swp
 *.swo
+
+# Maestro Setup
+.maestro/
