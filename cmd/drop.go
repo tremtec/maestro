@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/marco-souza/maestro/internal/scaffold"
 	"github.com/spf13/cobra"
+	"github.com/tremtec/maestro/internal/scaffold"
 )
 
 // dropCmd represents the drop command

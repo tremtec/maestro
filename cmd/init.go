@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/marco-souza/maestro/internal/scaffold"
 	"github.com/spf13/cobra"
+	"github.com/tremtec/maestro/internal/scaffold"
 )
 
 var tools []string

@@ -1,4 +1,4 @@
-module github.com/marco-souza/maestro
+module github.com/tremtec/maestro
 
 go 1.24.2
 

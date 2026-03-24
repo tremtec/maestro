@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/marco-souza/maestro/cmd"
+	"github.com/tremtec/maestro/cmd"
 )
 
 func main() {
