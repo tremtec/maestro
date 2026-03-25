@@ -1,0 +1,180 @@
+# .goreleaser.yml
+# Configuration for GoReleaser - advanced release automation
+# Run with: goreleaser release --clean
+
+project_name: maestro
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: maestro
+    binary: maestro
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - "386"
+    goarm:
+      - "7"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+
+archives:
+  - id: maestro
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+      - AGENTS.md
+      - maestro.yaml
+      - .maestro/templates/*
+      - .agents/skills/**/*
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: 'Improvements'
+      regexp: "^.*improve[(\\w)]*:+.*$"
+      order: 2
+    - title: Others
+      order: 999
+
+release:
+  github:
+    owner: tremtec
+    name: maestro
+  draft: false
+  prerelease: auto
+  name_template: "Release {{.Version}} 🎉"
+  header: |
+    ## Maestro {{.Version}} - AI Diamond Chain Workflow
+    
+    Squad-based development orchestrator using the AI Diamond Chain methodology.
+  footer: |
+    ## Installation
+    
+    ### macOS
+    ```bash
+    # Intel
+    brew install tremtec/tap/maestro
+    
+    # Or download directly
+    curl -L "https://github.com/tremtec/maestro/releases/download/{{.Version}}/maestro_{{.Version}}_Darwin_x86_64.tar.gz" | tar xz
+    
+    # Apple Silicon
+    curl -L "https://github.com/tremtec/maestro/releases/download/{{.Version}}/maestro_{{.Version}}_Darwin_arm64.tar.gz" | tar xz
+    ```
+    
+    ### Linux
+    ```bash
+    # AMD64
+    curl -L "https://github.com/tremtec/maestro/releases/download/{{.Version}}/maestro_{{.Version}}_Linux_x86_64.tar.gz" | tar xz
+    
+    # ARM64
+    curl -L "https://github.com/tremtec/maestro/releases/download/{{.Version}}/maestro_{{.Version}}_Linux_arm64.tar.gz" | tar xz
+    ```
+    
+    ### Windows
+    ```powershell
+    # Download from releases page and extract
+    ```
+    
+    ### Go Install
+    ```bash
+    go install github.com/tremtec/maestro@{{.Version}}
+    ```
+    
+    ## Documentation
+    
+    - [AI Diamond Chain Methodology](./docs/ai-diamond-chain-implementation-summary.md)
+    - [Agent Skills](./.agents/skills/)
+    - [Configuration](./maestro.yaml)
+    
+    **Full Changelog**: https://github.com/tremtec/maestro/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+# Optional: Homebrew tap
+brews:
+  - name: maestro
+    repository:
+      owner: tremtec
+      name: homebrew-tap
+    folder: Formula
+    homepage: https://tremtec.com
+    description: "AI Diamond Chain workflow orchestrator for squad-based development"
+    license: "MIT"
+    test: |
+      system "#{bin}/maestro --version"
+    install: |
+      bin.install "maestro"
+      # Install templates and skills
+      pkgshare.install ".maestro/templates"
+      pkgshare.install ".agents/skills"
+
+# Optional: Docker image
+# dockers:
+#   - image_templates:
+#       - "tremtec/maestro:{{ .Version }}-amd64"
+#       - "tremtec/maestro:latest-amd64"
+#     dockerfile: Dockerfile
+#     use: buildx
+#     build_flag_templates:
+#       - "--platform=linux/amd64"
+#       - "--label=org.opencontainers.image.created={{.Date}}"
+#       - "--label=org.opencontainers.image.title={{.ProjectName}}"
+#       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+#       - "--label=org.opencontainers.image.version={{.Version}}"
+#   - image_templates:
+#       - "tremtec/maestro:{{ .Version }}-arm64"
+#       - "tremtec/maestro:latest-arm64"
+#     dockerfile: Dockerfile
+#     use: buildx
+#     build_flag_templates:
+#       - "--platform=linux/arm64"
+#       - "--label=org.opencontainers.image.created={{.Date}}"
+#       - "--label=org.opencontainers.image.title={{.ProjectName}}"
+#       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+#       - "--label=org.opencontainers.image.version={{.Version}}"
+#     goarch: arm64
