@@ -46,24 +46,70 @@ agents:
 workflow:
   discovery:
     parallel: true
+    # Confidence levels and refinement settings
+    confidence_threshold: 70  # Minimum % for synthesis approval
+    max_refinement_rounds: 3
 
   synthesis:
     approval: true # pause for human approval before build
+    # Refinement triggers
+    refinement_on:
+      - low_confidence_critical_items
+      - conflicting_findings
+      - known_unknowns_count_exceeds: 2
+      - missing_dependencies
 
   build:
     parallel: true
-    tasks:
-      - agent: backend-engineer
-        depends_on: []
-      - agent: devops-sre
-        depends_on: []
-      - agent: frontend-engineer
-        depends_on: [backend-engineer]
+    # Continuous feedback during build
+    continuous_feedback:
+      enabled: true
+      trigger_on:
+        - module_complete
+        - checkpoint_reached
+        - pr_merged
+    modules:
+      - name: backend-core
+        agent: backend-engineer
+        checkpoint: "API contracts defined"
+        qa_entry_point: true
+      - name: infrastructure
+        agent: devops-sre
+        checkpoint: "Infrastructure as code complete"
+        qa_entry_point: true
+      - name: frontend-shell
+        agent: frontend-engineer
+        depends_on: [backend-core]
+        checkpoint: "UI components render with mock data"
+        qa_entry_point: true
+    # Feedback queue for async communication
+    feedback_queue:
+      enabled: true
+      file: "feedback-queue.md"
+      auto_pause_on_critical: true
 
   quality:
     parallel: true
     on_failure: fix_and_retry
     max_retries: 3
+    # Validation requirements
+    validations:
+      usecase_coverage:
+        required: true
+        min_coverage_percent: 80
+      workflow_testing:
+        required: true
+        test_happy_path: true
+        test_error_paths: true
+        test_edge_cases: true
+      edge_case_coverage:
+        required: true
+        categories:
+          - boundary_conditions
+          - empty_null_states
+          - concurrent_access
+          - failure_modes
+          - security_edge_cases
     # TODO: project specific commands
     # commands:
     #   - make test
