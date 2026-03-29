@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/tremtec/maestro/internal/scaffold"
@@ -13,11 +12,9 @@ var tools []string
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize a new maestro project",
-	Long: fmt.Sprintf(
-		"Set up a squad of sub-agents, create maestro.yaml, and initialize the .maestro/ state directory.\n\n"+
-			"Supported tools: %s",
-		strings.Join(scaffold.SupportedTools(), ", "),
-	),
+	Long: `Set up a squad of sub-agents, create maestro.yaml, and initialize the .maestro/ state directory.
+
+Supported tool: opencode`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("Initializing maestro project...")
 
@@ -25,7 +22,7 @@ var initCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println("Done. Run 'maestro <objective>' to start a workflow or use your favorite Agentic Toolkit.")
+		fmt.Println("Done. Run 'maestro run \"<prompt>\"' to start a workflow.")
 		return nil
 	},
 }
@@ -33,5 +30,5 @@ var initCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	initCmd.Flags().StringSliceVar(&tools, "tool", []string{"opencode"}, "agent runtimes to scaffold (e.g., --tool opencode,amp)")
+	initCmd.Flags().StringSliceVarP(&tools, "tool", "t", []string{"opencode"}, "agent runtime to scaffold (only opencode is supported)")
 }

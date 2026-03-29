@@ -21,7 +21,7 @@ type Result struct {
 
 // Runtime defines the interface for an AI agentic tool backend.
 type Runtime interface {
-	// Name returns the tool identifier (e.g., "opencode", "amp").
+	// Name returns the tool identifier (e.g., "opencode").
 	Name() string
 
 	// RunAgent sends a prompt to an agent and returns the result.

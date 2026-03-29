@@ -1,8 +1,7 @@
 # 🎵 Maestro
 
 A Unix-compatible CLI tool that orchestrates squad-based development
-using AI agentic tools like [OpenCode](https://opencode.ai) and
-[Amp](https://ampcode.com).
+using [OpenCode](https://opencode.ai) as the agent runtime.
 
 Maestro is a primary agent that leads your agentic opera — coordinating
 specialist sub-agents through a 4-phase workflow (Discovery → Synthesis
@@ -19,16 +18,14 @@ interaction.
   plain markdown files in `.maestro/`.
 - **Unix principles** — accepts stdin, returns stdout, composes with
   pipes.
-- **CLI first** — built with Cobra, supports OpenCode and Amp as agent
-  runtimes.
+- **CLI first** — built with Cobra, uses OpenCode as the agent runtime.
 
 ## Getting Started
 
 ```bash
 go install github.com/tremtec/maestro@latest
-maestro init                          # defaults to opencode
-maestro init --tool opencode,amp      # scaffold for both tools
-maestro "Build a REST API for user management"
+maestro init                          # scaffold for opencode
+maestro run "Build a REST API for user management"
 ```
 
 ## Commands
@@ -36,7 +33,9 @@ maestro "Build a REST API for user management"
 | Command               | Description                                     |
 | --------------------- | ----------------------------------------------- |
 | `maestro init`        | Set up squad, config, and `.maestro/` state dir |
-| `maestro <prompt>`    | Run an objective through the 4-phase workflow   |
+| `maestro run`         | Run a prompt through the workflow              |
+| `maestro update`      | Update agent definitions to latest templates    |
+| `maestro upgrade`     | Upgrade maestro CLI to latest version          |
 | `maestro completions` | Generate shell completions                      |
 
 ## Documentation

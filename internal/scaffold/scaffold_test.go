@@ -40,54 +40,10 @@ func TestInit_OpenCode_CreatesAllFiles(t *testing.T) {
 	assertFileContains(t, filepath.Join(dir, "maestro.yaml"), "- opencode")
 }
 
-func TestInit_Amp_CreatesSkillFiles(t *testing.T) {
-	dir := t.TempDir()
-
-	if err := Init(dir, "amp"); err != nil {
-		t.Fatalf("Init(amp) error = %v", err)
-	}
-
-	assertFileExists(t, filepath.Join(dir, "maestro.yaml"))
-	assertDirExists(t, filepath.Join(dir, ".maestro"))
-
-	// Check all Amp skill files
-	for _, name := range roleFiles {
-		assertFileExists(t, filepath.Join(dir, ".agents", "skills", name, "SKILL.md"))
-	}
-
-	// Maestro becomes AGENTS.md for Amp
-	assertFileExists(t, filepath.Join(dir, "AGENTS.md"))
-
-	// maestro.yaml should list amp
-	assertFileContains(t, filepath.Join(dir, "maestro.yaml"), "- amp")
-}
-
-func TestInit_MultiTool_CreatesBoth(t *testing.T) {
-	dir := t.TempDir()
-
-	if err := Init(dir, "opencode", "amp"); err != nil {
-		t.Fatalf("Init(opencode,amp) error = %v", err)
-	}
-
-	// OpenCode files
-	for _, name := range roleFiles {
-		assertFileExists(t, filepath.Join(dir, ".opencode", "agent", name+".md"))
-	}
-
-	// Amp skill files
-	for _, name := range roleFiles {
-		assertFileExists(t, filepath.Join(dir, ".agents", "skills", name, "SKILL.md"))
-	}
-
-	// Both listed in maestro.yaml
-	assertFileContains(t, filepath.Join(dir, "maestro.yaml"), "- opencode")
-	assertFileContains(t, filepath.Join(dir, "maestro.yaml"), "- amp")
-}
-
 func TestInit_UnsupportedTool(t *testing.T) {
 	dir := t.TempDir()
 
-	err := Init(dir, "cursornuke")
+	err := Init(dir, "amp")
 	if err == nil {
 		t.Fatal("expected error for unsupported tool")
 	}
@@ -215,7 +171,7 @@ func TestInit_GitignoreNotDuplicated(t *testing.T) {
 func TestInit_AgentFilesHaveFrontmatterAndRole(t *testing.T) {
 	dir := t.TempDir()
 
-	if err := Init(dir, "opencode", "amp"); err != nil {
+	if err := Init(dir); err != nil {
 		t.Fatalf("Init() error = %v", err)
 	}
 
@@ -223,11 +179,38 @@ func TestInit_AgentFilesHaveFrontmatterAndRole(t *testing.T) {
 	ocArchitect := filepath.Join(dir, ".opencode", "agent", "architect.md")
 	assertFileContains(t, ocArchitect, "mode: subagent")
 	assertFileContains(t, ocArchitect, "# Architect")
+}
 
-	// Amp skill files should have Amp-specific frontmatter
-	ampArchitect := filepath.Join(dir, ".agents", "skills", "architect", "SKILL.md")
-	assertFileContains(t, ampArchitect, "name: architect")
-	assertFileContains(t, ampArchitect, "# Architect")
+func TestUpdate_ReScaffoldsFiles(t *testing.T) {
+	dir := t.TempDir()
+
+	// First initialize
+	if err := Init(dir); err != nil {
+		t.Fatalf("Init() error = %v", err)
+	}
+
+	// Then update
+	if err := Update(dir, "opencode"); err != nil {
+		t.Fatalf("Update() error = %v", err)
+	}
+
+	// Files should still exist and have content
+	for _, name := range roleFiles {
+		assertFileExists(t, filepath.Join(dir, ".opencode", "agent", name+".md"))
+	}
+	assertFileExists(t, filepath.Join(dir, ".opencode", "agent", "maestro.md"))
+}
+
+func TestUpdate_NotInitialized(t *testing.T) {
+	dir := t.TempDir()
+
+	err := Update(dir, "opencode")
+	if err == nil {
+		t.Fatal("expected error when not initialized")
+	}
+	if !strings.Contains(err.Error(), "not initialized") {
+		t.Errorf("unexpected error: %v", err)
+	}
 }
 
 func assertFileExists(t *testing.T, path string) {

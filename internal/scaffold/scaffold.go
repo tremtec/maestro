@@ -26,15 +26,17 @@ func IsInitialized(targetDir string) bool {
 }
 
 // Init scaffolds a new maestro project in the given directory.
-// tools specifies which agent runtimes to scaffold (e.g., ["opencode", "amp"]).
+// Now only supports "opencode" tool.
 func Init(targetDir string, tools ...string) error {
+	// Default to opencode only
 	if len(tools) == 0 {
 		tools = []string{"opencode"}
 	}
 
+	// Validate - only opencode is supported
 	for _, t := range tools {
 		if !ValidateTool(t) {
-			return fmt.Errorf("unsupported tool: %q (supported: %v)", t, SupportedTools())
+			return fmt.Errorf("unsupported tool: %q (only 'opencode' is supported)", t)
 		}
 	}
 
@@ -43,16 +45,14 @@ func Init(targetDir string, tools ...string) error {
 		return nil
 	}
 
-	// Write maestro.yaml from template (with tools list injected)
-	if err := writeMaestroYAML(targetDir, tools); err != nil {
+	// Write maestro.yaml from template (opencode only now)
+	if err := writeMaestroYAML(targetDir); err != nil {
 		return err
 	}
 
-	// Scaffold each requested tool
-	for _, tool := range tools {
-		if err := scaffoldTool(targetDir, tool); err != nil {
-			return fmt.Errorf("scaffolding %s: %w", tool, err)
-		}
+	// Scaffold opencode tool
+	if err := scaffoldTool(targetDir, "opencode"); err != nil {
+		return fmt.Errorf("scaffolding opencode: %w", err)
 	}
 
 	// Create .maestro/ state directory
@@ -67,6 +67,30 @@ func Init(targetDir string, tools ...string) error {
 		return err
 	}
 
+	return nil
+}
+
+// Update re-scaffolds agent files from the latest templates.
+// This updates the .opencode/ directory with current agent prompts.
+func Update(targetDir, tool string) error {
+	// Validate tool
+	if !ValidateTool(tool) {
+		return fmt.Errorf("unsupported tool: %q (only 'opencode' is supported)", tool)
+	}
+
+	// Check if project is initialized
+	if !IsInitialized(targetDir) {
+		return fmt.Errorf("project not initialized. Run 'maestro init' first")
+	}
+
+	fmt.Printf("Updating %s agent files...\n", tool)
+
+	// Re-scaffold the tool (force overwrite)
+	if err := scaffoldToolForce(targetDir, tool); err != nil {
+		return fmt.Errorf("updating %s: %w", tool, err)
+	}
+
+	fmt.Println("Update complete.")
 	return nil
 }
 
@@ -99,8 +123,8 @@ func Drop(targetDir string) error {
 	return nil
 }
 
-// writeMaestroYAML reads the template and replaces the tools list.
-func writeMaestroYAML(targetDir string, tools []string) error {
+// writeMaestroYAML reads the template and writes it.
+func writeMaestroYAML(targetDir string) error {
 	dest := filepath.Join(targetDir, "maestro.yaml")
 	if _, err := os.Stat(dest); err == nil {
 		fmt.Println("  skip maestro.yaml (already exists)")
@@ -112,19 +136,7 @@ func writeMaestroYAML(targetDir string, tools []string) error {
 		return fmt.Errorf("reading maestro.yaml template: %w", err)
 	}
 
-	// Replace the default tools list with the requested ones
-	var toolLines strings.Builder
-	for _, t := range tools {
-		toolLines.WriteString("  - " + t + "\n")
-	}
-	content := strings.Replace(
-		string(data),
-		"tools:\n  - opencode\n",
-		"tools:\n"+toolLines.String(),
-		1,
-	)
-
-	if err := os.WriteFile(dest, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(dest, data, 0o644); err != nil {
 		return fmt.Errorf("writing maestro.yaml: %w", err)
 	}
 	fmt.Println("  create maestro.yaml")
@@ -162,7 +174,7 @@ func splitFrontmatter(data []byte) (frontmatter, body string) {
 	return s[4 : 4+end], s[4+end+4:]
 }
 
-// scaffoldTool writes agent files for a specific tool backend.
+// scaffoldTool writes agent files for a specific tool backend (skip existing).
 func scaffoldTool(targetDir, tool string) error {
 	roleNames, err := roles()
 	if err != nil {
@@ -216,16 +228,70 @@ func scaffoldTool(targetDir, tool string) error {
 	return nil
 }
 
+// scaffoldToolForce writes agent files, overwriting existing ones.
+func scaffoldToolForce(targetDir, tool string) error {
+	roleNames, err := roles()
+	if err != nil {
+		return err
+	}
+
+	for _, role := range roleNames {
+		roleRaw, err := templates.ReadFile("templates/roles/" + role + ".md")
+		if err != nil {
+			return fmt.Errorf("reading role %s: %w", role, err)
+		}
+
+		toolRaw, err := templates.ReadFile("templates/" + tool + "/" + role + ".yaml")
+		if err != nil {
+			return fmt.Errorf("reading %s wrapper for %s: %w", tool, role, err)
+		}
+
+		// Parse role frontmatter (description) and body
+		roleFM, roleBody := splitFrontmatter(roleRaw)
+		// Parse tool wrapper frontmatter (tool-specific fields)
+		toolFM, _ := splitFrontmatter(toolRaw)
+
+		// Merge: role frontmatter + tool frontmatter + body
+		var merged strings.Builder
+		merged.WriteString("---\n")
+		merged.WriteString(strings.TrimSpace(roleFM))
+		merged.WriteString("\n")
+		if toolFM != "" {
+			merged.WriteString(strings.TrimSpace(toolFM))
+			merged.WriteString("\n")
+		}
+		merged.WriteString("---")
+		merged.WriteString(roleBody)
+
+		dest := agentOutputPath(targetDir, tool, role)
+		exists := false
+		if _, err := os.Stat(dest); err == nil {
+			exists = true
+		}
+
+		if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
+			return fmt.Errorf("creating directory for %s: %w", dest, err)
+		}
+
+		if err := os.WriteFile(dest, []byte(merged.String()), 0o644); err != nil {
+			return fmt.Errorf("writing %s: %w", dest, err)
+		}
+
+		if exists {
+			fmt.Printf("  update %s\n", dest)
+		} else {
+			fmt.Printf("  create %s\n", dest)
+		}
+	}
+
+	return nil
+}
+
 // agentOutputPath returns the destination path for an agent file based on the tool.
 func agentOutputPath(targetDir, tool, role string) string {
 	switch tool {
 	case "opencode":
 		return filepath.Join(targetDir, ".opencode", "agent", role+".md")
-	case "amp":
-		if role == "maestro" {
-			return filepath.Join(targetDir, "AGENTS.md")
-		}
-		return filepath.Join(targetDir, ".agents", "skills", role, "SKILL.md")
 	default:
 		return filepath.Join(targetDir, "."+tool, "agent", role+".md")
 	}

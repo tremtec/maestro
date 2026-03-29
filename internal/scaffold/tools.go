@@ -1,9 +1,9 @@
 package scaffold
 
 // supportedTools lists all known tool backends.
+// Now only opencode is supported.
 var supportedTools = map[string]bool{
 	"opencode": true,
-	"amp":      true,
 }
 
 // ValidateTool reports whether a tool name is supported.

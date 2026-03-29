@@ -3,7 +3,7 @@ name: my-project
 description: Squad-based development orchestrator
 
 # Supported tools — agent runtimes to scaffold and use
-# Supported values: opencode, amp
+# Only opencode is supported
 tools:
   - opencode
 
