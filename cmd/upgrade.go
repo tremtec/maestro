@@ -181,16 +181,18 @@ func downloadAndInstall(downloadURL string) error {
 		// Move new binary to location
 		newBinaryPath := filepath.Join(filepath.Dir(currentPath), "maestro")
 		if err := os.Rename(tmpFile.Name(), newBinaryPath); err != nil {
-			// Restore backup
-			os.Rename(backupPath, currentPath)
+			// Restore backup - ignore error since we're already in error state
+			_ = os.Rename(backupPath, currentPath)
 			return fmt.Errorf("installing new binary: %w", err)
 		}
 
 		// Make executable
-		os.Chmod(newBinaryPath, 0o755)
+		if err := os.Chmod(newBinaryPath, 0o755); err != nil {
+			return fmt.Errorf("chmod new binary: %w", err)
+		}
 
-		// Remove backup
-		os.Remove(backupPath)
+		// Remove backup - ignore error
+		_ = os.Remove(backupPath)
 	} else {
 		return fmt.Errorf("could not find maestro binary location")
 	}
