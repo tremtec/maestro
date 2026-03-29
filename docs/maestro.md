@@ -1,10 +1,9 @@
 # Maestro
 
-Maestro is a CLI tool that orchestrates squad-based development using AI
-agentic tools like [OpenCode](https://opencode.ai) and
-[Amp](https://ampcode.com). It acts as a **primary agent** that
-leads your agentic opera — coordinating specialist sub-agents through a
-structured workflow to reach an objective.
+Maestro is a CLI tool that orchestrates squad-based development using
+[OpenCode](https://opencode.ai) as the agent runtime. It acts as a
+**primary agent** that leads your agentic opera — coordinating specialist
+sub-agents through a structured workflow to reach an objective.
 
 Built for long-running tasks with minimal human interaction. Unix
 compatible: accepts stdin as input, returns output to stdout.
@@ -14,8 +13,7 @@ compatible: accepts stdin as input, returns output to stdout.
 - **Orchestrates multi-agent workflows** — coordinates Discovery,
   Synthesis, Build, and Quality Gate phases automatically.
 - **Manages specialist sub-agents** — delegates work to Architect,
-  Researcher, Frontend/Backend Engineers, QA, and others via
-  configurable agent runtimes (OpenCode, Amp).
+  Researcher, Frontend/Backend Engineers, QA, and others via OpenCode.
 - **Minimizes human interaction** — the only required human touchpoint
   is reviewing and approving the plan before the build phase begins.
 - **Tracks state as markdown** — all objectives, phase reports, and
@@ -37,23 +35,19 @@ go install github.com/tremtec/maestro@latest
 ### Initialize a project
 
 ```bash
-maestro init                          # defaults to opencode
-maestro init --tool amp              # scaffold for Amp
-maestro init --tool opencode,amp     # scaffold for both
+maestro init                          # scaffold for opencode
 ```
 
 This will:
 
-1. Set up a squad of sub-agents for the selected tool(s).
-   - OpenCode: `.opencode/agent/*.md`
-   - Amp: `.agents/skills/*/SKILL.md` + `AGENTS.md`
+1. Set up a squad of sub-agents for OpenCode: `.opencode/agent/*.md`
 2. Create a `maestro.yaml` configuration file.
 3. Create the `.maestro/` state directory and add it to `.gitignore`.
 
 ### Run an objective
 
 ```bash
-maestro "Build a REST API for user management"
+maestro run "Build a REST API for user management"
 ```
 
 Maestro starts the 4-phase workflow:
@@ -65,6 +59,22 @@ Maestro starts the 4-phase workflow:
    graph.
 4. **Quality Gate** — QA and code review verify the output. Failures
    loop back to the responsible agent.
+
+### Update agent definitions
+
+```bash
+maestro update
+```
+
+Updates the `.opencode/agent/*.md` files to the latest templates.
+
+### Upgrade maestro
+
+```bash
+maestro upgrade
+```
+
+Downloads and installs the latest maestro CLI version.
 
 ### Shell completions
 
@@ -81,7 +91,9 @@ Generates shell completions (powered by Cobra).
 | Command               | Description                                      |
 | --------------------- | ------------------------------------------------ |
 | `maestro init`        | Initialize project (squad, config, state folder) |
-| `maestro <prompt>`    | Start an objective through the 4-phase workflow  |
+| `maestro run`         | Start an objective through the workflow          |
+| `maestro update`      | Update agent definitions to latest templates    |
+| `maestro upgrade`     | Upgrade maestro CLI to latest version            |
 | `maestro completions` | Generate shell completions                       |
 
 ---
@@ -136,8 +148,8 @@ schema.
 
 ## Design Principles
 
-- **CLI first** — supports multiple agent runtimes (OpenCode, Amp),
-  runs from your terminal.
+- **CLI first** — uses OpenCode as the agent runtime, runs from your
+  terminal.
 - **Unix compatible** — accepts stdin, returns stdout, composes with
   pipes.
 - **Minimal human interaction** — only the plan approval step requires

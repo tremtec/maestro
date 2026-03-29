@@ -89,9 +89,9 @@ Plan
   └──▶ Frontend Engineer   (depends_on: backend)
 ```
 
-Each agent works within an isolated session managed by the configured
-runtime. Maestro monitors progress via the event stream and coordinates
-handoffs between agents.
+Each agent works within an isolated session managed by OpenCode. Maestro
+monitors progress via the event stream and coordinates handoffs between
+agents.
 
 **Inputs:** Approved plan from Phase 2.
 
@@ -217,31 +217,18 @@ tools:
 Role instructions...
 ```
 
-**Amp** — agents become skills in `.agents/skills/*/SKILL.md`:
-
-```markdown
----
-name: agent-name
-description: Brief description of the agent's expertise
----
-
-Role instructions...
-```
-
-The orchestrator (Maestro) maps to `AGENTS.md` in Amp projects.
-
 ---
 
 ## Execution Model
 
 Maestro drives the workflow through a **Runtime** interface that
-abstracts the underlying AI tool. Each tool provides its own execution
+abstracts the underlying AI tool. OpenCode provides the execution
 backend:
 
 ```text
 ┌──────────────┐     Runtime interface    ┌──────────────────┐
-│  Maestro CLI │ ◀──────────────────────▶ │  Agent Runtime   │
-│  (Go)        │   RunAgent(prompt) →     │  (opencode, amp) │
+│  Maestro CLI │ ◀──────────────────────▶ │  OpenCode Runtime│
+│  (Go)        │   RunAgent(prompt) →     │  (HTTP API)      │
 └──────────────┘   ← Result              └──────────────────┘
 ```
 
@@ -257,14 +244,11 @@ Uses the OpenCode HTTP API:
 5. **Collect results** — `GET /session/:id/message` retrieves agent
    output for synthesis and review.
 
-### Amp Runtime
+Or use the CLI directly:
 
-Uses the Amp CLI in non-interactive mode:
-
-1. **Execute** — `amp -x "<prompt>"` runs a single agent task.
-2. **Collect output** — stdout contains the agent's response.
-3. **Skills** — agent roles are loaded as skills from
-   `.agents/skills/*/SKILL.md`.
+```bash
+opencode "Your prompt here"
+```
 
 ---
 

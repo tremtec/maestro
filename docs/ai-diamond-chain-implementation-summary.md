@@ -14,7 +14,7 @@ This document summarizes the implementation of the AI Diamond Chain methodology 
 
 ### 1. Updated AGENTS.md (Primary Orchestrator)
 
-**Location**: `/home/marco/w/marco-souza/maestro/AGENTS.md`
+**Location**: `AGENTS.md`
 
 **Changes**:
 - Transformed linear 4-phase workflow into infinite diamond chain
@@ -38,7 +38,7 @@ This document summarizes the implementation of the AI Diamond Chain methodology 
 
 ### 2. Updated maestro.yaml (Configuration)
 
-**Location**: `/home/marco/w/marco-souza/maestro/maestro.yaml`
+**Location**: `maestro.yaml`
 
 **Changes**:
 - Added `diamond_chain` section with mode configuration
@@ -72,10 +72,10 @@ diamonds:
 
 ---
 
-### 3. Enhanced Agent Skills
+### 3. Enhanced Agent Definitions
 
-#### Researcher Skill
-**Location**: `.agents/skills/researcher/SKILL.md`
+#### Researcher Agent
+**Location**: `.opencode/agent/researcher.md`
 
 **New responsibilities**:
 - **Discovery Diamond (Diverge)**:
@@ -94,8 +94,8 @@ diamonds:
 
 ---
 
-#### UX Designer Skill
-**Location**: `.agents/skills/ux-designer/SKILL.md`
+#### UX Designer Agent
+**Location**: `.opencode/agent/ux-designer.md`
 
 **New responsibilities**:
 - **Discovery Diamond (Diverge)**:
@@ -115,8 +115,8 @@ diamonds:
 
 ---
 
-#### Architect Skill
-**Location**: `.agents/skills/architect/SKILL.md`
+#### Architect Agent
+**Location**: `.opencode/agent/architect.md`
 
 **New responsibilities**:
 - **Discovery Diamond (Diverge)**:
@@ -213,23 +213,23 @@ diamonds:
 │  └──────────────────────┘       │ implementation-      │      │            │
 │                                │ decision-gate.md     │      │            │
 └────────────────────────────────┼──────────────────────┴──────┼────────────┘
-                                 │                              │
-                    ┌──────────────┴──────────────────────────────┘            │
-                    ↓                                                          │
-         ┌──────────────────────┐                                             │
-         │   LEARN & FEED       │                                             │
-         │  • Researcher        │                                             │
-         │    → Usage analytics   │                                             │
-         │  • UX Designer         │─────────────────────────────────────────────┘
-         │    → User feedback     │
-         │  • Architect
-         │    → Tech learnings
-         │
-         │ OUTPUT:
-         │ learned-report.md
-         │ → Queues for
-         │   Diamond (n+1)
-         └──────────────────────┘
+                                  │                              │
+                     ┌──────────────┴──────────────────────────────┘            │
+                     ↓                                                          │
+          ┌──────────────────────┐                                             │
+          │   LEARN & FEED       │                                             │
+          │  • Researcher        │                                             │
+          │    → Usage analytics   │                                             │
+          │  • UX Designer         │─────────────────────────────────────────────┘
+          │    → User feedback     │
+          │  • Architect
+          │    → Tech learnings
+          │
+          │ OUTPUT:
+          │ learned-report.md
+          │ → Queues for
+          │   Diamond (n+1)
+          └──────────────────────┘
 ```
 
 ---
@@ -240,9 +240,9 @@ diamonds:
 |------|--------|-------------|
 | `AGENTS.md` | ✅ Updated | AI Diamond Chain orchestrator definition |
 | `maestro.yaml` | ✅ Updated | Diamond chain configuration |
-| `.agents/skills/researcher/SKILL.md` | ✅ Updated | Market/competitive analysis + learnings |
-| `.agents/skills/ux-designer/SKILL.md` | ✅ Updated | User research + feedback synthesis |
-| `.agents/skills/architect/SKILL.md` | ✅ Updated | Architecture options + tech learnings |
+| `.opencode/agent/researcher.md` | ✅ Updated | Market/competitive analysis + learnings |
+| `.opencode/agent/ux-designer.md` | ✅ Updated | User research + feedback synthesis |
+| `.opencode/agent/architect.md` | ✅ Updated | Architecture options + tech learnings |
 | `.maestro/templates/discovery-decision-gate.md` | ✅ Created | Discovery gate template |
 | `.maestro/templates/implementation-decision-gate.md` | ✅ Created | Implementation gate template |
 | `.maestro/templates/learned-report.md` | ✅ Created | Learn & Feed template |
@@ -298,7 +298,7 @@ When findings are incomplete:
    - Legacy `workflow` section maintained for compatibility
 
 2. **Update agent definitions**:
-   - Replace old skill definitions with enhanced versions
+   - Run `maestro update` to refresh agent files
    - Agents now have explicit diverge/converge responsibilities
 
 3. **Create .maestro/templates/**:
@@ -314,8 +314,14 @@ When findings are incomplete:
 ## Usage Example
 
 ```bash
-# Initialize new objective
-maestro "Build user authentication system"
+# Initialize new project
+maestro init
+
+# Update agent definitions to latest
+maestro update
+
+# Run an objective
+maestro run "Build user authentication system"
 
 # Discovery Diamond starts automatically
 # - Diverge: Researcher, UX Designer, Architect explore
@@ -339,9 +345,9 @@ maestro "Build user authentication system"
 
 - [x] AGENTS.md describes AI Diamond Chain methodology
 - [x] maestro.yaml configures diamonds with diverge/converge phases
-- [x] Researcher skill covers market analysis and learnings
-- [x] UX Designer skill covers user research and feedback
-- [x] Architect skill covers options exploration and tech learnings
+- [x] Researcher agent covers market analysis and learnings
+- [x] UX Designer agent covers user research and feedback
+- [x] Architect agent covers options exploration and tech learnings
 - [x] Decision gate templates created
 - [x] Learn & Feed phase defined
 - [x] Infinite chain structure documented
