@@ -1,10 +1,12 @@
 ---
 mode: primary
 tools:
-  write: false
-  edit: false
+  write: true
+  edit: true
 permission:
   bash:
+    "grep *": allow
+    "ls *": allow
     "make *": allow
-    "*": ask
+    "*": allow
 ---
